@@ -118,3 +118,9 @@ You often work on an issue with nobody around to answer questions.
 
 `WORKSHOP.md` walks people through the workshop this repo was built for, module
 by module.
+
+# Agent Rules <!-- tessl-managed -->
+
+Run `tessl install` first if `.tessl/RULES.md` is missing: Tessl plugins are not committed.
+
+@.tessl/RULES.md follow the [instructions](.tessl/RULES.md)

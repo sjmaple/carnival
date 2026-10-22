@@ -1,0 +1,39 @@
+{
+  "name": "sjmaple/carnival",
+  "mode": "managed",
+  "dependencies": {
+    "tessl-labs/factory-setup": {
+      "version": "0.13.1"
+    }
+  },
+  "actions": {
+    "implement-linear": {
+      "skill": "tessl-labs/factory#implement-linear",
+      "environment": "carnival-factory",
+      "agent": "claude",
+      "model": "claude-opus-5-5"
+    }
+  },
+  "triggers": {
+    "linear-issue-delegated": {
+      "on": [
+        "linear:Issue.create",
+        "linear:Issue.update"
+      ],
+      "when": {
+        "event.data.teamId": "e19828ba-e542-416a-b1c4-deac2d8e2ab9",
+        "event.data.delegateId": "{{ linear.tesslApp.userId }}",
+        "event.data.state.type": "unstarted"
+      },
+      "concurrency": {
+        "keys": [
+          {
+            "key": "implement:{{ event.data.id }}",
+            "limit": 1
+          }
+        ]
+      },
+      "action": "implement-linear"
+    }
+  }
+}
