@@ -12,6 +12,18 @@
       "environment": "carnival-factory",
       "agent": "claude",
       "model": "claude-opus-5-5"
+    },
+    "move-to-in-review": {
+      "skill": "file:tessl-factory#move-to-in-review",
+      "environment": "carnival-factory",
+      "agent": "codex",
+      "model": "gpt-6-luna"
+    },
+    "review-in-review": {
+      "skill": "file:tessl-factory#review-in-review",
+      "environment": "carnival-factory",
+      "agent": "claude",
+      "model": "claude-sonnet-5-5"
     }
   },
   "triggers": {
@@ -34,6 +46,49 @@
         ]
       },
       "action": "implement-linear"
+    },
+    "tessl-pr-opened": {
+      "on": [
+        "github:pull_request.opened"
+      ],
+      "when": {
+        "event.pull_request.head.ref": {
+          "matches": "^tessl/"
+        },
+        "event.pull_request.head.repo.id": 1429845704
+      },
+      "concurrency": {
+        "keys": [
+          {
+            "key": "move-to-in-review:{{ event.pull_request.number }}",
+            "limit": 1
+          }
+        ]
+      },
+      "action": "move-to-in-review"
+    },
+    "linear-issue-in-review": {
+      "on": [
+        "linear:Issue.update"
+      ],
+      "when": {
+        "event.data.teamId": "e19828ba-e542-416a-b1c4-deac2d8e2ab9",
+        "event.data.delegateId": "{{ linear.tesslApp.userId }}",
+        "event.updatedFrom.stateId": {
+          "exists": true
+        },
+        "event.data.state.name": "In Review"
+      },
+      "concurrency": {
+        "debounce": "90s",
+        "keys": [
+          {
+            "key": "review:{{ event.data.id }}",
+            "limit": 1
+          }
+        ]
+      },
+      "action": "review-in-review"
     }
   }
 }
