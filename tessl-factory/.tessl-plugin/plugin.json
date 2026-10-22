@@ -1,0 +1,7 @@
+{
+  "name": "tessleng/carnival-factory",
+  "version": "0.1.0",
+  "description": "Carnival's own factory skills: move Tessl's Linear issues to In Review and code review them there.",
+  "private": true,
+  "skills": ["skills/move-to-in-review", "skills/review-in-review"]
+}
