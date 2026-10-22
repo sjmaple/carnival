@@ -1,0 +1,12 @@
+.tessl/
+.agents/
+.claude/
+.codex/
+.cursor/
+.gemini/
+.github/mcp.json
+.vscode/
+.mcp.json
+tessl.json
+package-lock.json
+dist/
