@@ -118,7 +118,3 @@ You often work on an issue with nobody around to answer questions.
 
 `WORKSHOP.md` walks people through the workshop this repo was built for, module
 by module.
-
-# Agent Rules <!-- tessl-managed -->
-
-@.tessl/RULES.md follow the [instructions](.tessl/RULES.md)
