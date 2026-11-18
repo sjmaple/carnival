@@ -11,7 +11,28 @@
       "skill": "tessl-labs/factory#implement-linear",
       "environment": "carnival-factory",
       "agent": "claude",
-      "model": "claude-opus-5-5"
+      "model": "claude-sonnet-5-5",
+      "params": {
+        "ESTIMATE": {
+          "type": "string",
+          "optional": true,
+          "actionOnly": true
+        }
+      },
+      "selectOverlays": [
+        "estimate-{{ inputs.ESTIMATE }}"
+      ],
+      "overlays": {
+        "estimate-1": {
+          "model": "claude-haiku-5-5"
+        },
+        "estimate-5": {
+          "model": "claude-opus-5-5"
+        },
+        "estimate-8": {
+          "model": "claude-opus-5-5"
+        }
+      }
     }
   },
   "triggers": {
@@ -33,7 +54,12 @@
           }
         ]
       },
-      "action": "implement-linear"
+      "action": {
+        "use": "implement-linear",
+        "inputs": {
+          "ESTIMATE": "{{ event.data.estimate }}"
+        }
+      }
     }
   }
 }
