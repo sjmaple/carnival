@@ -1,0 +1,7 @@
+{
+  "name": "sjmaple/carnival-factory",
+  "version": "0.1.0",
+  "description": "The carnival's own factory skills: Linear triage and maintenance loops",
+  "private": true,
+  "skills": "./skills/"
+}
