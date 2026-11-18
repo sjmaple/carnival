@@ -7,15 +7,34 @@
     }
   },
   "actions": {
-    "implement-linear": {
+    "triage-linear": {
+      "skill": "file:tessl-factory#triage-linear",
+      "environment": "carnival-factory",
+      "agent": "claude",
+      "model": "claude-sonnet-5-5"
+    },
+    "implement-small": {
       "skill": "tessl-labs/factory#implement-linear",
       "environment": "carnival-factory",
       "agent": "claude",
-      "model": "claude-opus-5-5"
+      "model": "claude-haiku-5-5"
+    },
+    "implement-medium": {
+      "skill": "tessl-labs/factory#implement-linear",
+      "environment": "carnival-factory",
+      "agent": "claude",
+      "model": "claude-sonnet-5-5"
+    },
+    "implement-large": {
+      "skill": "tessl-labs/factory#implement-linear",
+      "environment": "carnival-factory",
+      "agent": "claude",
+      "model": "claude-opus-5-5",
+      "timeout": "4h"
     }
   },
   "triggers": {
-    "linear-issue-delegated": {
+    "linear-issue-needs-triage": {
       "on": [
         "linear:Issue.create",
         "linear:Issue.update"
@@ -23,7 +42,46 @@
       "when": {
         "event.data.teamId": "e19828ba-e542-416a-b1c4-deac2d8e2ab9",
         "event.data.delegateId": "{{ linear.tesslApp.userId }}",
-        "event.data.state.type": "unstarted"
+        "event.data.state.type": "unstarted",
+        "event.data.labels.*.name": {
+          "none": {
+            "in": [
+              "factory:small",
+              "factory:medium",
+              "factory:large"
+            ]
+          }
+        }
+      },
+      "concurrency": {
+        "debounce": "10s",
+        "keys": [
+          {
+            "key": "triage:{{ event.data.id }}",
+            "limit": 1
+          }
+        ]
+      },
+      "action": "triage-linear"
+    },
+    "linear-issue-sized-small": {
+      "on": [
+        "linear:Issue.create",
+        "linear:Issue.update"
+      ],
+      "when": {
+        "event.data.teamId": "e19828ba-e542-416a-b1c4-deac2d8e2ab9",
+        "event.data.delegateId": "{{ linear.tesslApp.userId }}",
+        "event.data.state.type": "unstarted",
+        "event.data.labels.*.name": {
+          "contains": "factory:small",
+          "none": {
+            "in": [
+              "factory:medium",
+              "factory:large"
+            ]
+          }
+        }
       },
       "concurrency": {
         "keys": [
@@ -33,7 +91,65 @@
           }
         ]
       },
-      "action": "implement-linear"
+      "action": "implement-small"
+    },
+    "linear-issue-sized-medium": {
+      "on": [
+        "linear:Issue.create",
+        "linear:Issue.update"
+      ],
+      "when": {
+        "event.data.teamId": "e19828ba-e542-416a-b1c4-deac2d8e2ab9",
+        "event.data.delegateId": "{{ linear.tesslApp.userId }}",
+        "event.data.state.type": "unstarted",
+        "event.data.labels.*.name": {
+          "contains": "factory:medium",
+          "none": {
+            "in": [
+              "factory:small",
+              "factory:large"
+            ]
+          }
+        }
+      },
+      "concurrency": {
+        "keys": [
+          {
+            "key": "implement:{{ event.data.id }}",
+            "limit": 1
+          }
+        ]
+      },
+      "action": "implement-medium"
+    },
+    "linear-issue-sized-large": {
+      "on": [
+        "linear:Issue.create",
+        "linear:Issue.update"
+      ],
+      "when": {
+        "event.data.teamId": "e19828ba-e542-416a-b1c4-deac2d8e2ab9",
+        "event.data.delegateId": "{{ linear.tesslApp.userId }}",
+        "event.data.state.type": "unstarted",
+        "event.data.labels.*.name": {
+          "contains": "factory:large",
+          "none": {
+            "in": [
+              "factory:small",
+              "factory:medium"
+            ]
+          }
+        }
+      },
+      "concurrency": {
+        "keys": [
+          {
+            "key": "implement:{{ event.data.id }}",
+            "limit": 1
+          }
+        ]
+      },
+      "action": "implement-large"
     }
   }
 }
