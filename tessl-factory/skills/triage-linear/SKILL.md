@@ -15,8 +15,14 @@ loop for that size:
 | `factory:medium` | `implement-medium` | Claude Sonnet 5.5         |
 | `factory:large`  | `implement-large`  | Claude Opus 5.5, 4h limit |
 
-You never change code, open branches or pull requests, move the issue's state
-or change its delegate. Your only writes are the label and one comment.
+You never change code, open branches or pull requests, or change the issue's
+delegate. Your only writes are the label, moving the issue back to Todo, and
+one comment.
+
+When Tessl picks up a delegated issue it moves it from Todo to the team's
+first started state, such as In Progress, before you run. The implement loops
+only start on an issue in an unstarted state, so you hand the issue on by
+adding the label and moving it back to Todo in the same update.
 
 ## Your inputs
 
@@ -48,14 +54,16 @@ stop without retrying a write.
 
 Query `viewer { id }` (that is the Tessl agent) and
 `issue(id: "<issue id>") { id identifier title description url state { type }
-delegate { id } team { id } labels { nodes { id name } } comments(first: 50) {
-nodes { body user { name } } } }`.
+delegate { id } team { id states { nodes { id name type position } } } labels {
+nodes { id name } } comments(first: 50) { nodes { body user { name } } } }`.
 
 Stop with no write when any of these is true:
 
 - the issue is no longer delegated to the Tessl agent (`delegate.id` is not
   `viewer.id`);
-- its state type is not `unstarted`;
+- its state type is `backlog`, `triage`, `completed` or `canceled`: a person
+  took it back or ended it. `unstarted` and `started` are both expected;
+  Tessl itself moves the issue to started when it picks it up;
 - it already has one of `factory:small`, `factory:medium` or `factory:large`.
   A person may have sized it by hand, or an earlier triage run already did.
 
@@ -89,14 +97,21 @@ costs a failed run; an oversized one only costs a bigger model.
    it with `issueLabelCreate(input: { name: "<label>", teamId: "<team id>",
 color: "<colour>" })`, using `#4cb782` for small, `#f2c94c` for medium and
    `#eb5757` for large.
-2. Read the issue's labels again. If a size label appeared since step 1, stop
-   with no further write.
-3. Add the label with `issueUpdate(id: "<issue id>", input: { addedLabelIds:
-["<label id>"] })`. Use `addedLabelIds`, never `labelIds`, so the issue
-   keeps its other labels.
-4. Comment with `commentCreate(input: { issueId, body })`: one or two
-   sentences naming the size and the reason, for example "Sized **medium**: a
-   new game following the water-cannon pattern, with its own tests. To change
-   the size, swap the label before the build starts."
+2. Read the issue again. If a size label appeared since step 1, or it now
+   meets a stop condition from step 1, stop with no further write.
+3. Find the Todo state: the team's `unstarted` state with the lowest
+   `position`.
+4. Comment first, so the reason is on the issue before the build starts.
+5. Add the label and move the issue to Todo in one call:
+   `issueUpdate(id: "<issue id>", input: { addedLabelIds: ["<label id>"],
+stateId: "<Todo state id>" })`. Use `addedLabelIds`, never `labelIds`, so
+   the issue keeps its other labels. Both changes must go in the same call:
+   the implement loop starts on the update that carries the label and the
+   unstarted state together.
+
+The comment, in step 4, uses `commentCreate(input: { issueId, body })`: one or two
+sentences naming the size and the reason, for example "Sized **medium**: a
+new game following the water-cannon pattern, with its own tests. To change
+the size, swap the label before the build starts."
 
 Then stop. The label starts the implement loop.
